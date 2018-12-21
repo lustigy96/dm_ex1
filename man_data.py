@@ -32,3 +32,6 @@ def put2grups(data_frame,class_vec_name, data_col_name):
         for ind in range(len(data[data_col_name].values)):
             datasets.loc[ind,groups]=(data[data_col_name].values)[ind]
     return datasets
+
+def data2csv(data_frame):
+    x=1;

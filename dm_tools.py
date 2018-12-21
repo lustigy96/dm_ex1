@@ -6,6 +6,8 @@ import statsmodels.api as sm
 from sklearn import linear_model
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import Ridge
 
 
 # check corelation - basic, plot scatter_plot
@@ -77,3 +79,20 @@ def OLS_MODEL(param_df,target_df):
     # print summary         # Print out the statistics
     return predictions, model
 
+#lasso regression
+def lasso(param_df,target_df,alpha):
+    X=param_df
+    y=target_df
+    lassoreg = Lasso(alpha=alpha, normalize=False, max_iter=2000,random_state=None)#1e5)
+    model=lassoreg.fit(param_df, target_df)
+    predictions = lassoreg.predict(param_df)
+    return predictions, model
+
+#lasso regression
+def ridge(param_df,target_df,alpha):
+    X=param_df
+    y=target_df
+    ridgereg = Ridge(alpha=alpha, normalize=True)
+    model=ridgereg.fit(param_df,target_df)
+    predictions = ridgereg.predict(param_df)
+    return predictions, model
