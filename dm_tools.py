@@ -96,3 +96,8 @@ def ridge(param_df,target_df,alpha):
     model=ridgereg.fit(param_df,target_df)
     predictions = ridgereg.predict(param_df)
     return predictions, model
+
+
+
+
+

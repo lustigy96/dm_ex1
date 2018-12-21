@@ -9,8 +9,8 @@ OLS=False #Ordinary Least Squares
 LOG=False #log regression
 POLY=False #polynomial regression
 LASSO=False #lasso regression
-RIDGE=True #ridge resression
+RIDGE=False #ridge resression
 
-
+SMART_1=True #sg==194 -> ridge. other -> poly
 alpha_f = 0.05 #f test
 SD2AVG_TRESH=0.2
