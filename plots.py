@@ -36,3 +36,5 @@ def scatter_plot(data_frame,x_name,y_name,color,marker,title,xlabel, ylabel, ind
 
 def boxplot(data_frame,data):
     plt.boxplot(data, 0, 'gD')
+
+
