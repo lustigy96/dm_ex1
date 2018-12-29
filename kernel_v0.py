@@ -113,8 +113,8 @@ if not defines.TEST_MODE:
     train_frame=data_frame.iloc[:1800, :]
     test_frame=data_frame.iloc[1800:, :]
 
-    train_frame = train_frame.loc[train_frame['sg'] == 12]
-    test_frame = test_frame.loc[test_frame['sg'] == 12]
+    train_frame = train_frame.loc[train_frame['sg'] == 194]
+    test_frame = test_frame.loc[test_frame['sg'] == 194]
 
     # dm_tools.correlation_graphs(data_frame=train_frame,Ef=1,Ebg=0) #correlation between E_f, E_bg
     stat_vec=statistics.simple_Stat(train_frame) #calc statistics - sd, ang, corelation and filter
@@ -152,7 +152,7 @@ if not defines.TEST_MODE:
             if i==len(ang_c_vec)-1 and (train_frame['ang_c'] > ang_c_vec[i]).any():
                 curr_df = train_frame.loc[train_frame['ang_c']>ang_c_vec[i]]
                 test_1=test_frame.loc[test_frame['ang_c']>ang_c_vec[i]]
-            else:
+            elif (train_frame['ang_c'] > ang_c_vec[i]).any():
                 curr_df = train_frame.loc[train_frame['ang_c'] < ang_c_vec[i+1]];
                 curr_df = curr_df.loc[curr_df['ang_c'] > ang_c_vec[i]];
                 test_1 = test_frame.loc[test_frame['ang_c'] < ang_c_vec[i+1]];
@@ -237,7 +237,7 @@ if not defines.TEST_MODE:
     plt.xlabel("id")
     plt.ylabel("E_bg")
     plt.title("grean for prediction and yellow for real")
-    # plt.show()
+    plt.show()
 
 
 
@@ -324,42 +324,80 @@ if defines.TEST_MODE:
         predict_E = "E_f"
         sagnificant_x = "x_Al"
         # poly part
-        train_1 = train_frame.loc[train_frame['sg'] != 194]
-        test_1 = test_frame.loc[test_frame['sg'] != 194]
+        train_1 = train_frame.loc[train_frame['sg'] != 12]
+        test_1 = test_frame.loc[test_frame['sg'] != 12]
+        train_1 = train_1.loc[train_frame['sg'] != 194]
+        test_1 = test_1.loc[test_frame['sg'] != 194]
+
         deg = 2
         relevant_vec = [sagnificant_x]
-        predictions_1, model = POLY_implementation(deg, train_1, relevant_vec, stat_vec, sagnificant_x, predict_E)
+        predictions_1, model = POLY_implementation(deg, train_1,test_1, relevant_vec, stat_vec, sagnificant_x, predict_E)
         # OLS part - by ang C
+        #sg12
         ang_c_vec=[0,8,11,18]
         train_2 = train_frame.loc[train_frame['sg'] == 12]
         test_2 = test_frame.loc[test_frame['sg'] == 12]
         relevant_vec = [sagnificant_x]
-        booli=False
+        booli = False
         for i in range(len(ang_c_vec)):
-            if i==len(ang_c_vec)-1 and (train_2['ang_c'] > ang_c_vec[i]).any():
-                curr_df = train_2.loc[train_2['ang_c']>ang_c_vec[i]]
-                test_part=test_2.loc[test_2['ang_c']>ang_c_vec[i]]
-            else:
-                curr_df = train_2.loc[train_2['ang_c'] < ang_c_vec[i+1]];
+            a = train_2['ang_c'] > ang_c_vec[i]
+            if i == len(ang_c_vec) - 1 and (train_2['ang_c'] > ang_c_vec[i]).any():
+                curr_df = train_2.loc[train_2['ang_c'] > ang_c_vec[i]]
+                test_part = test_2.loc[test_2['ang_c'] > ang_c_vec[i]]
+            elif i < len(ang_c_vec) - 1:
+                curr_df = train_2.loc[train_2['ang_c'] < ang_c_vec[i + 1]];
                 curr_df = curr_df.loc[curr_df['ang_c'] > ang_c_vec[i]];
-                test_part = test_2.loc[test_2['ang_c'] < ang_c_vec[i+1]];
+                test_part = test_2.loc[test_2['ang_c'] < ang_c_vec[i + 1]];
                 test_part = test_part.loc[test_part['ang_c'] > ang_c_vec[i]];
 
-            if len(np.array(curr_df["id"])) > 0 and len(np.array(test_part["id"]))>0:
-                pre, model = dm_tools.OLS_MODEL(np.array(curr_df["ang_c"]),np.array(curr_df[predict_E]))
-                X=test_part.loc[:,["ang_c"]]
-                predictions_2=model.predict(X)
+            if len(np.array(curr_df["id"])) > 0 and len(np.array(test_part["id"])) > 0:
+                pre, model = dm_tools.OLS_MODEL(np.array(curr_df["ang_c"]), np.array(curr_df[predict_E]))
+                X = test_part.loc[:, ["ang_c"]]
+                predictions_2 = model.predict(X)
 
                 ex_dic_temp = {
                     'id': np.array(test_part["id"]),
                     'formation_energy_ev_natom': predictions_2
                 }
                 df_temp = pd.DataFrame(ex_dic_temp, columns=["id", "formation_energy_ev_natom"])
-                if not booli: df_194=df_temp;
-                else: df_194=pd.concat([df_194,df_temp])
-                booli=True
+                if not booli:
+                    df_12 = df_temp;
+                else:
+                    df_12 = pd.concat([df_12, df_temp])
+                booli = True
 
-        # unite all
+        train_2 = train_frame.loc[train_frame['sg'] == 194]
+        test_2 = test_frame.loc[test_frame['sg'] == 194]
+        relevant_vec = [sagnificant_x]
+        booli = False
+        for i in range(len(ang_c_vec)):
+            a = train_2['ang_c'] > ang_c_vec[i]
+            if i == len(ang_c_vec) - 1 and (train_2['ang_c'] > ang_c_vec[i]).any():
+                curr_df = train_2.loc[train_2['ang_c'] > ang_c_vec[i]]
+                test_part = test_2.loc[test_2['ang_c'] > ang_c_vec[i]]
+            elif i < len(ang_c_vec) - 1:
+                curr_df = train_2.loc[train_2['ang_c'] < ang_c_vec[i + 1]];
+                curr_df = curr_df.loc[curr_df['ang_c'] > ang_c_vec[i]];
+                test_part = test_2.loc[test_2['ang_c'] < ang_c_vec[i + 1]];
+                test_part = test_part.loc[test_part['ang_c'] > ang_c_vec[i]];
+
+            if len(np.array(curr_df["id"])) > 0 and len(np.array(test_part["id"])) > 0:
+                pre, model = dm_tools.OLS_MODEL(np.array(curr_df["ang_c"]), np.array(curr_df[predict_E]))
+                X = test_part.loc[:, ["ang_c"]]
+                predictions_3 = model.predict(X)
+
+                ex_dic_temp_194 = {
+                    'id': np.array(test_part["id"]),
+                    'formation_energy_ev_natom': predictions_3
+                }
+                df_temp = pd.DataFrame(ex_dic_temp_194, columns=["id", "formation_energy_ev_natom"])
+                if not booli:
+                    df_194 = df_temp;
+                else:
+                    df_194 = pd.concat([df_194, df_temp])
+                booli = True
+
+    # unite all
         ex_dic_bg = {
             'id': np.array(test_frame["id"]),
             'bandgap_energy_ev': predictions_bg
@@ -373,6 +411,7 @@ if defines.TEST_MODE:
         df_1 = pd.DataFrame(ex_dic_1, columns=["id", "formation_energy_ev_natom"]);
 
         df = pd.concat([df_1, df_194])
+        df = pd.concat([df, df_12])
         df = df.sort_values(by=['id'])
         df = pd.merge(df, df_bg, how='outer')
         print df
